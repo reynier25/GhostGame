@@ -89,7 +89,65 @@ class GhostGame
     "GHOST".slice(0, count)
   end
 
-  # UI methods ?
+  # UI methods (display game status and prompts to players)
+  def welcome
+    system("clear")
+    puts "Let's play a round of Ghost!"
+    display_standings
+  end
 
+  def take_turn
+    system("clear")
+    puts "It's #{current_player}'s turn!"
+    letter = nil
+
+    until letter
+      letter = current_player.guess(fragment)
+
+      unless valid_play?(letter)
+        current_player.alert_invalid_move(letter)
+        letter = nil
+      end
+    end
+
+    add_letter(letter)
+    puts "#{current_player} added the letter '#{letter}' to the fragment."
+  end
+
+  def display_standings
+    puts "Current standings:"
+
+    players.each do |player|
+      puts "#{player}: #{record(player)}"
+    end
+
+    sleep(2)
+  end
+
+  def update_standings
+    system("clear")
+    puts "#{previous_player} spelled #{fragment}."
+    puts "#{previous_player} gets a letter!"
+    sleep(1)
+
+    if losses[previous_player] == MAX_LOSS_COUNT - 1
+      puts "#{previous_player} has been eliminated!"
+      sleep(1)
+    end
+    
+    losses[previous_player] += 1
+    
+    display_standings
+  end
 end
 
+if $PROGRAM_NAME == __FILE__
+  game = GhostGame.new(
+    Player.new("Gizmo"), 
+    Player.new("Breakfast"), 
+    Player.new("Toby"),
+    Player.new("Leonardo")
+    )
+
+  game.run
+end
